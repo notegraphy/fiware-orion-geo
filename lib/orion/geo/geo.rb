@@ -5,7 +5,7 @@ module Orion
   class Geo
 
     def initialize
-      config = Orion::Config::load_config('http://192.168.99.100:32769')
+      config = Orion::Config::load_config(ORION_SERVER_IP)
       @url = config[:orion_url]
     end
 
@@ -51,8 +51,9 @@ module Orion
     # type_area = 'circle' || 'polygon'
     #   - polygon: array_point = ['lat, long','lat, long','lat, long'] ----- infinite number of points
     #   - circle: array_point = ['lat, long, radius'] ----- radius in meters
-    def pull(type, type_area, array_point)
-      action = '/ngsi10/queryContext'
+    def pull(type, type_area, array_point, offset = 0, limit = nil)
+      limit = @limit if limit.nil?
+      action = "/ngsi10/queryContext?offset=#{offset}&limit=#{limit}&details=on"
 
       options = {
           body: {

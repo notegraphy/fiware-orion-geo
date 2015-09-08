@@ -5,19 +5,20 @@ module Orion
     class << self
       attr_reader :orion_url
 
-      def load_config(orion_url)
+      def load_config(orion_url = nil, orion_limit = nil)
         begin
-          filename = "/config/initializers/fiware_orion_config.rb"
-          # filename = "#{Rails.root}/config/initializers/fiware_orion_config.rb"
+          filename = "#{Rails.root}/config/initializers/fiware_orion_config.rb"
           if self.check_config_file(filename)
             require filename
             @orion_url = (orion_url.nil?) ? ORION_SERVER_IP : orion_url
+            @orion_limit = (orion_limit.nil?) ? ORION_LIMIT : orion_limit
           else
             @orion_url = orion_url
-            puts @orion_url
+            @orion_limit = orion_limit
           end
           {
               orion_url: @orion_url,
+              orion_limit: @orion_limit,
           }
         rescue => e
           puts e => e.message
