@@ -4,8 +4,8 @@ require 'pp'
 module Orion
   class Geo
 
-    def initialize
-      config = Orion::Config::load_config(ORION_SERVER_IP)
+    def initialize(server_ip, limit = nil)
+      config = Orion::Config::load_config(server_ip, limit)
       @url = config[:orion_url]
     end
 
@@ -15,35 +15,33 @@ module Orion
     # lat = latitude
     def push(type,id,long,lat)
       action = '/ngsi10/updateContext'
-
       options = {
-          body: {
-              contextElements: [
+        body: {
+          contextElements: [
+            {
+              type: type,
+              isPattern: 'false',
+              id: id,
+              attributes: [
                 {
-                  type: type,
-                  isPattern: "false",
-                  id: id,
-                  attributes: [
-                  {
-                    name: "position",
-                    type: "coords",
-                    value: "#{lat}, #{long}",
-                    metadatas: [
-                      {
-                        name: "location",
-                        type: "string",
-                        value: "WSG84"
-                      }
-                    ]
-                  }
-                ]
-              }
-              ],
-              updateAction: "APPEND"
-            }.to_json,
-          headers: { 'Content-Type' => 'application/json' }
-          }
-
+                  name: 'position',
+                  type: 'coords',
+                  value: "#{lat}, #{long}",
+                  metadatas: [
+                    {
+                      name: 'location',
+                      type: 'string',
+                      value: 'WSG84'
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+            updateAction: 'APPEND'
+        }.to_json,
+        headers: { 'Content-Type' => 'application/json' }
+      }
       HTTParty.post(@url + action, options)
     end
 
@@ -52,25 +50,21 @@ module Orion
     #   - polygon: array_point = ['lat, long','lat, long','lat, long'] ----- infinite number of points
     #   - circle: array_point = ['lat, long, radius'] ----- radius in meters
     def pull(type, type_area, array_point, offset = 0, limit = nil)
-
-      action = "/ngsi10/queryContext?details=on"
-      unless(limit.nil?)
-        action = "/ngsi10/queryContext?offset=#{offset}&limit=#{limit}&details=on"
-      end
-
+      action = '/ngsi10/queryContext?details=on'
+      action = "/ngsi10/queryContext?offset=#{offset}&limit=#{limit}&details=on" unless limit.nil?
       options = {
-          body: {
+        body: {
           entities: [
             {
               type: type,
-              isPattern: "true",
-              id: ".*"
+              isPattern: 'true',
+              id: '.*'
             }
           ],
           restriction: {
             scopes: [
               {
-                type: "FIWARE::Location",
+                type: 'FIWARE::Location',
                 value: get_area(type_area, array_point)
               }
             ]
@@ -78,7 +72,6 @@ module Orion
         }.to_json,
         headers: { 'Content-Type' => 'application/json', 'Accept' => 'application/json' }
       }
-
       HTTParty.post(@url + action, options)
     end
 
@@ -86,51 +79,48 @@ module Orion
     # id = id of the object
     def delete(type, id)
       action = '/ngsi10/updateContext'
-
       options = {
         body: {
           contextElements: [
             {
               type: type,
-              isPattern: "false",
+              isPattern: 'false',
               id: id
             }
           ]
         }.to_json,
         headers: { 'Content-Type' => 'application/json', 'Accept' => 'application/json' }
       }
-
       HTTParty.post(@url + action, options)
     end
+
+    private
 
     # type_area = 'circle' || 'polygon'
     #   - polygon: array_point = ['lat, long','lat, long','lat, long'] ----- infinite number of points
     #   - polygon: array_point = [lat, long, radius] ----- radius in meters
-    private
     def get_area(type_area, array_point)
       if type_area == 'circle'
         area = {
-            circle: {
-                centerLatitude: array_point[0],
-                centerLongitude: array_point[1],
-                radius: array_point[2]
-            }
+          circle: {
+            centerLatitude: array_point[0],
+            centerLongitude: array_point[1],
+            radius: array_point[2]
+          }
         }
       else
+        points = array_point.map do |c|
+          c = c.split(',')
+          { latitude: c[0], longitude: c[1] }
+        end
         area = {
-            polygon: {
-                vertices:
-                array_point.map{ |c|
-                  c = c.split(',')
-                  {
-                      latitude: c[0],
-                      longitude: c[1]
-                  }
-                }
-            }
+          polygon: {
+            vertices: points
+          }
         }
       end
       area
     end
+
   end
 end
