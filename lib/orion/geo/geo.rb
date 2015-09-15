@@ -52,8 +52,11 @@ module Orion
     #   - polygon: array_point = ['lat, long','lat, long','lat, long'] ----- infinite number of points
     #   - circle: array_point = ['lat, long, radius'] ----- radius in meters
     def pull(type, type_area, array_point, offset = 0, limit = nil)
-      limit = @limit if limit.nil?
-      action = "/ngsi10/queryContext?offset=#{offset}&limit=#{limit}&details=on"
+
+      action = "/ngsi10/queryContext?details=on"
+      unless(limit.nil?)
+        action = "/ngsi10/queryContext?offset=#{offset}&limit=#{limit}&details=on"
+      end
 
       options = {
           body: {
