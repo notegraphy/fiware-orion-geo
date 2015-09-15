@@ -3,7 +3,7 @@ require 'spec_helper'
 describe 'Endpoints Orion server' do
 
   before(:each) do
-    @sut = Orion::Geo.new
+    @sut = Orion::Geo.new()
   end
 
   describe 'Store geolocalisation data for object' do
