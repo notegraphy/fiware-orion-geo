@@ -17,9 +17,9 @@ module Orion
     # long = Longitude
     # lat = latitude
     def create(type,id,long,lat)
-      action = '/ngsi10/updateContext'
-      @options[:body] = self.build_body(type, id, 'APPEND', false, [self.build_geo_attribute(lat, long)])
-      self.call_orion(action, @options)
+      action = '/v1/updateContext'
+      @options[:body] = build_body(type, id, 'APPEND', false, [build_geo_attribute(lat, long)])
+      call_orion('post', action, @options)
     end
 
     # type = type of data E.g: 'City'
@@ -27,38 +27,39 @@ module Orion
     # long = Longitude
     # lat = latitude
     def update(type,id,long,lat)
-      action = '/ngsi10/updateContext'
-      @options[:body] = self.build_body(type, id, 'UPDATE', false, [self.build_geo_attribute(lat, long)])
-      self.call_orion(action, @options)
+      action = '/v1/updateContext'
+      @options[:body] = build_body(type, id, 'UPDATE', false, [build_geo_attribute(lat, long)])
+      call_orion('post', action, @options)
     end
 
     # type = type of data E.g: 'City'
     # id = id of the object
     def delete(type, id)
-      action = '/ngsi10/updateContext'
-      @options[:body] = self.build_body(type, id, 'DELETE')
-      self.call_orion(action, @options)
+      action = '/v1/updateContext'
+      @options[:body] = build_body(type, id, 'DELETE')
+      call_orion('post', action, @options)
     end
 
     def get(type, id)
-      action = '/ngsi10/queryContext'
-      @options[:body] = self.build_query(type)
-      self.call_orion(action, @options)
+      action = '/v1/queryContext?details=on'
+      @options[:body] = build_query(type, nil, id)
+      call_orion('post', action, @options)
     end
 
     def get_all(type)
-      action = "/ngsi10/contextEntities?entity::type=#{type}&details=on"
-      self.call_orion(action, {})
+      action = "/v1/contextEntityTypes/#{type}?details=on"
+      opt = { headers: { 'Accept' => 'application/json' } }
+      call_orion('get', action, opt)
     end
 
     # type = type of data E.g: 'City'
     # type_area = 'circle' || 'polygon'
     #   - polygon: array_point = ['lat, long','lat, long','lat, long'] ----- infinite number of points
     #   - circle: array_point = ['lat, long, radius'] ----- radius in meters
-    def get_by_position(type, type_area, array_point, limit = 999999)
-      action = "/ngsi10/queryContext?limit=#{limit}&details=on"
-      @options[:body] = self.build_query(type, get_area(type_area, array_point))
-      self.call_orion(action, @options)
+    def get_by_position(type, type_area, array_point, limit = 1000)
+      action = "/v1/queryContext?limit=#{limit}&details=on"
+      @options[:body] = build_query(type, get_area(type_area, array_point))
+      call_orion('post', action, @options)
     end
 
     private
@@ -80,8 +81,12 @@ module Orion
       area
     end
 
-    def call_orion(action, options)
-      HTTParty.post(@url + action, options)
+    def call_orion(http_action, action, options)
+      if http_action == 'get'
+        HTTParty.get(@url + action, options)
+      elsif http_action == 'post'
+        HTTParty.post(@url + action, options)
+      end
     end
 
     def build_body(type, id, action, pattern = false, attributes = nil)
