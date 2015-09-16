@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    fiware-orion-geo (0.0.3)
+    fiware-orion-geo (0.1.0)
       httparty (~> 0)
 
 GEM
