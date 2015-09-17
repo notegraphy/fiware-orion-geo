@@ -12,7 +12,11 @@ describe 'Endpoints Orion server' do
 
     before(:all) do
       @id = 1
-      @response = @sut.create('testnotes', @id, 2.1589760, 41.3888000)
+      data = [
+        { type: 'coord', data: {lat: 2.1589760, long: 41.3888000}},
+        { type: 'attr', data: {name: 'name', type: 'string', value: 'Note test'}}
+      ]
+      @response = @sut.create('testnotes', @id, data)
       @context_response = parse_orion_response(@response.body).first
     end
 
@@ -58,8 +62,12 @@ describe 'Endpoints Orion server' do
 
     before(:all) do
       @id = 1
+      data = [
+        { type: 'coord', data: {lat: 2.1689760, long: 42.3888000}},
+        { type: 'attr', data: {name: 'name', type: 'string', value: 'Note test'}}
+      ]
       create_test_notes([{ id: @id, lat: 2.1589760, long: 41.3888000}])
-      @response = @sut.update('testnotes', @id, 2.1679760, 42.3888000)
+      @response = @sut.update('testnotes', @id, data)
       @context_response = parse_orion_response(@response.body).first
     end
 

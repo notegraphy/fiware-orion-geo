@@ -51,6 +51,11 @@ class FiwareOrionGeoSpecData
               value: 'WSG84'
             }
           ]
+        },
+        {
+          name: 'name',
+          type: 'string',
+          value: ''
         }
       ]
     end

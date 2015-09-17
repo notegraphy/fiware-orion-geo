@@ -14,21 +14,23 @@ module Orion
 
     # type = type of data E.g: 'City'
     # id = id of the element
-    # long = Longitude
-    # lat = latitude
-    def create(type,id,long,lat)
+    # attr = array of hashes with the following structure [{ :type => coord | attr, :data => {} }]
+    # If the type is corrd :attr_data follows this format { :long, :lat }
+    # If the type is attr :attr_data follows this format { :name, :type, :value }
+    def create(type, id, attr)
       action = '/v1/updateContext'
-      @options[:body] = build_body(type, id, 'APPEND', false, [build_geo_attribute(lat, long)])
+      @options[:body] = build_body(type, id, 'APPEND', false, build_attributes(attr))
       call_orion('post', action, @options)
     end
 
     # type = type of data E.g: 'City'
     # id = id of the element
-    # long = Longitude
-    # lat = latitude
-    def update(type,id,long,lat)
+    # attr = array of hashes with the following structure [{ :type => coord | attr, :data => {} }]
+    # If the type is corrd :attr_data follows this format { :long, :lat }
+    # If the type is attr :attr_data follows this format { :name, :type, :value }
+    def update(type, id, attr)
       action = '/v1/updateContext'
-      @options[:body] = build_body(type, id, 'UPDATE', false, [build_geo_attribute(lat, long)])
+      @options[:body] = build_body(type, id, 'UPDATE', false, build_attributes(attr))
       call_orion('post', action, @options)
     end
 
@@ -100,7 +102,7 @@ module Orion
         ],
         updateAction: action
       }
-      json[:contextElements].first[:attributes] = attributes unless attributes.nil?
+      json[:contextElements].first[:attributes] = attributes unless attributes.nil? || attributes.empty?
       json.to_json
     end
 
@@ -115,6 +117,23 @@ module Orion
       { name: 'position', type: 'coords',
         value: "#{lat}, #{long}", metadatas: [ { name: 'location', type: 'string', value: 'WSG84' } ]
       }
+    end
+
+    def build_default_attribute(name, type, value)
+      { name: name, type: type, value: value }
+    end
+
+    def build_attributes(attr_data)
+      attr = []
+      attr_data.each do |a|
+        data = a[:data]
+        if a[:type] == 'coord'
+          attr.push(build_geo_attribute(data[:lat], data[:long]))
+        else
+          attr.push(build_default_attribute(data[:name], data[:type], data[:value]))
+        end
+      end
+      attr
     end
 
   end
