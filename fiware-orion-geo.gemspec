@@ -4,7 +4,7 @@ Gem::Specification.new do |s|
   s.date        = '2014-08-03'
   s.summary     = 'Interface for Orion server'
   s.description = 'Gives you the possibility to simply interfear with Orion server (from Fiware) to insert and retrieve data based on geolocalisation'
-  s.authors     = ['Nikolaï POSNER']
+  s.authors     = ['Nikolai POSNER']
   s.email       = 'nikoposner@gmail.com'
   s.homepage    = 'https://github.com/NikoEEMI/fiware-orion-geo'
   s.license     = 'MIT'
