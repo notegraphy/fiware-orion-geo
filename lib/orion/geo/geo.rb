@@ -155,6 +155,17 @@ module Orion
           escaped = map[1]
           s.gsub(forbidden, escaped)
         end
+      when Symbol
+        sanitize(data.to_s)
+      when Array
+        data.map { |elem| sanitize(elem) }
+      when Hash
+        data.inject({}) do |clean, kv|
+          key = kv[0]
+          value = kv[1]
+          clean[sanitize(key)] = sanitize(value)
+          clean
+        end
       else
         data
       end

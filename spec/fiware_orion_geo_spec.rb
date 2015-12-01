@@ -32,8 +32,15 @@ describe 'Endpoints Orion server' do
     # http://fiware-orion.readthedocs.org/en/develop/user/forbidden_characters/index.html
     it 'should escape forbidden characters' do
       id = 'forbidden'
+      value = [
+        '<>"\'=;()',
+        {
+          "not<>valid" => "invali(d)",
+          :'not()valid_sym' => "not=good"
+        }
+      ]
       data = [
-        { type: 'attr', data: {name: 'na<m)e', type: 'stri;ng', value: '<>"\'=;()'}}
+        { type: 'attr', data: {name: 'na<m)e', type: 'Str;ang(e)Array', value: value}}
       ]
       response = @sut.create('testnotes', id, data)
       body = parse_orion_response(response.body)
