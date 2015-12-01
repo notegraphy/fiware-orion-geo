@@ -29,6 +29,27 @@ describe 'Endpoints Orion server' do
       expect(@context_response['statusCode']['code']).to eq(200.to_s)
     end
 
+    # http://fiware-orion.readthedocs.org/en/develop/user/forbidden_characters/index.html
+    it 'should escape forbidden characters' do
+      id = 'forbidden'
+      data = [
+        { type: 'attr', data: {name: 'na<m)e', type: 'stri;ng', value: '<>"\'=;()'}}
+      ]
+      response = @sut.create('testnotes', id, data)
+      body = parse_orion_response(response.body)
+      expect(body).not_to be nil
+      context_response = body.first
+      expect(context_response['statusCode']['code']).to eq(200.to_s)
+
+      response = @sut.get('testnotes', id)
+      context_response = parse_orion_response(response.body).first
+      expect(context_response['contextElement'].size).to eq(4)
+      expect(context_response['statusCode']['code']).to eq(200.to_s)
+      responde = @sut.delete('testnotes', id)
+      context_response = parse_orion_response(response.body).first
+      expect(context_response['statusCode']['code']).to eq(200.to_s)
+    end
+
     after(:all) do
       delete_test_notes([@id])
     end
