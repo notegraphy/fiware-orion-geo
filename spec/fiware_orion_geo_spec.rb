@@ -4,7 +4,8 @@ require 'fiware_orion_geo_spec_data'
 describe 'Endpoints Orion server' do
 
   before(:all) do
-    @sut = Orion::Geo.new('http://test02.notegraphy.com:1026', 21)
+    orion_url = ENV['ORION_URL'] || 'http://test02.notegraphy.com:1026'
+    @sut = Orion::Geo.new(orion_url, 21)
     @data = FiwareOrionGeoSpecData.new
   end
 
