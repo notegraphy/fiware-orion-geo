@@ -57,7 +57,8 @@ def create_test_notes(notes_data)
         updateAction: 'APPEND'
       }.to_json
     }
-    HTTParty.post('http://test02.notegraphy.com:1026/v1/updateContext', options)
+    orion_url = ENV['ORION_URL'] || 'http://test02.notegraphy.com:1026'
+    HTTParty.post("#{orion_url}/v1/updateContext", options)
   end
 end
 
@@ -76,6 +77,7 @@ def delete_test_notes(notes_ids)
         updateAction: 'DELETE'
       }.to_json
     }
-    HTTParty.post('http://test02.notegraphy.com:1026/v1/updateContext', options)
+    orion_url = ENV['ORION_URL'] || 'http://test02.notegraphy.com:1026'
+    HTTParty.post("#{orion_url}/v1/updateContext", options)
   end
 end

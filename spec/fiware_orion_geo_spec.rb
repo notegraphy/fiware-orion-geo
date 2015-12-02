@@ -4,7 +4,8 @@ require 'fiware_orion_geo_spec_data'
 describe 'Endpoints Orion server' do
 
   before(:all) do
-    @sut = Orion::Geo.new('http://test02.notegraphy.com:1026', 21)
+    orion_url = ENV['ORION_URL'] || 'http://test02.notegraphy.com:1026'
+    @sut = Orion::Geo.new(orion_url, 21)
     @data = FiwareOrionGeoSpecData.new
   end
 
@@ -26,6 +27,34 @@ describe 'Endpoints Orion server' do
 
     it 'should return 200' do
       expect(@context_response['statusCode']['code']).to eq(200.to_s)
+    end
+
+    # http://fiware-orion.readthedocs.org/en/develop/user/forbidden_characters/index.html
+    it 'should escape forbidden characters' do
+      id = 'forbidden'
+      value = [
+        '<>"\'=;()',
+        {
+          "not<>valid" => "invali(d)",
+          :'not()valid_sym' => "not=good"
+        }
+      ]
+      data = [
+        { type: 'attr', data: {name: 'na<m)e', type: 'Str;ang(e)Array', value: value}}
+      ]
+      response = @sut.create('testnotes', id, data)
+      body = parse_orion_response(response.body)
+      expect(body).not_to be nil
+      context_response = body.first
+      expect(context_response['statusCode']['code']).to eq(200.to_s)
+
+      response = @sut.get('testnotes', id)
+      context_response = parse_orion_response(response.body).first
+      expect(context_response['contextElement'].size).to eq(4)
+      expect(context_response['statusCode']['code']).to eq(200.to_s)
+      responde = @sut.delete('testnotes', id)
+      context_response = parse_orion_response(response.body).first
+      expect(context_response['statusCode']['code']).to eq(200.to_s)
     end
 
     after(:all) do

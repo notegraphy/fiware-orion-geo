@@ -120,7 +120,7 @@ module Orion
     end
 
     def build_default_attribute(name, type, value)
-      { name: name, type: type, value: value }
+      { name: sanitize(name), type: sanitize(type), value: sanitize(value) }
     end
 
     def build_attributes(attr_data)
@@ -134,6 +134,41 @@ module Orion
         end
       end
       attr
+    end
+
+    FORBIDDEN_CHARS = {
+      '<' => '%3C',
+      '>' => '%3E',
+      '"' => '%22',
+      '\'' => '%27',
+      '=' => '%3D',
+      ';' => '%3B',
+      '(' => '%28',
+      ')' => '%29'
+    }.freeze
+
+    def sanitize(data)
+      case data
+      when String
+        FORBIDDEN_CHARS.inject(data) do |s, map|
+          forbidden = map[0]
+          escaped = map[1]
+          s.gsub(forbidden, escaped)
+        end
+      when Symbol
+        sanitize(data.to_s)
+      when Array
+        data.map { |elem| sanitize(elem) }
+      when Hash
+        data.inject({}) do |clean, kv|
+          key = kv[0]
+          value = kv[1]
+          clean[sanitize(key)] = sanitize(value)
+          clean
+        end
+      else
+        data
+      end
     end
 
   end
